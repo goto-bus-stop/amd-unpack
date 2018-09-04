@@ -32,6 +32,11 @@ module.exports = function amdUnpack (source, opts) {
     }
   })
 
+  // wasn't amd
+  if (modules.length === 0) {
+    return
+  }
+
   return modules
 
   function ondefine (node) {
