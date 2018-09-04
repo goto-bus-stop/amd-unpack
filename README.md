@@ -1,6 +1,6 @@
 # amd-unpack
 
-extract modules from a bundled AMD project using define&#x2F;require functions
+extract modules from a bundled AMD project using define/require functions
 
 [Install](#install) - [Usage](#usage) - [License: Apache-2.0](#license)
 

@@ -1,6 +1,6 @@
 {
   "name": "amd-unpack",
-  "description": "extract modules from a bundled AMD project using define&#x2F;require functions",
+  "description": "extract modules from a bundled AMD project using define/require functions",
   "version": "0.0.0",
   "author": "Renée Kooi <renee@kooi.me>",
   "bugs": {
