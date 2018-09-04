@@ -2,7 +2,7 @@
 
 extract modules from a bundled AMD project using define/require functions
 
-[Install](#install) - [Usage](#usage) - [License: Apache-2.0](#license)
+[Install](#install) - [Usage](#usage) - [API](#api) - [License: Apache-2.0](#license)
 
 [![npm][npm-image]][npm-url]
 [![travis][travis-image]][travis-url]
@@ -23,9 +23,50 @@ npm install amd-unpack
 
 ## Usage
 
+Pipe a bundle to it:
+
 ```js
-var amdUnpack = require('amd-unpack')
+$ amd-unpack < bundle.js
+[
+{"id":0,"source":"exports.test=function(t){console.log(t)},exports.boop=\"beep\"","deps":{}}
+,
+{"id":1,"source":"var n,r,o=module.exports={};/*..snip..*/","deps":{}}
+,
+{"id":2,"source":"(function(t){function n(t,e){for(var n=0,r=t.length-1;r>=0;r--){var /*..snip..*/","deps":{"1":1}}
+,
+{"id":3,"source":"var r=require('a');require('b').test(r.join(\"whatever\",\"lol\"))","deps":{"a":0,"b":2}}
+]
 ```
+
+The output is a JSON array in the [module-deps][] format.
+
+The output is rewritten to the CJS format:
+```js
+// input
+define(['a', 'b'], function (c, d) {
+  // xyz
+  return z
+})
+
+// output
+var c = require('a')
+var d = require('b')
+
+module.exports = (function () {
+  // xyz
+  return z
+}())
+```
+
+## API
+
+```js
+var unpack = require('amd-unpack')
+```
+
+### `var modules = unpack(source)`
+
+Return an array of [module-deps][] objects from the bundle source string `source`.
 
 ## License
 
