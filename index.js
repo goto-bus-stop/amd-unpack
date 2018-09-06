@@ -68,19 +68,7 @@ module.exports = function amdUnpack (source, opts) {
       return dep === 'exports'
     })
 
-    // Ensure the exports object is named `exports`
-    var moduleRangeDelta = 0
-    if (hasExports) {
-      var param = factory.params[deps.indexOf('exports')]
-      if (param.name !== 'exports') {
-        var before = source.length
-        source = renameVariable(source, factory, param, 'exports')
-        moduleRangeDelta = source.length - before
-      }
-    }
-
     var range = getModuleRange(factory.body)
-    range.end += moduleRangeDelta
     var moduleSource = source
       ? source.slice(range.start, range.end)
       : astring.generate({
@@ -88,7 +76,13 @@ module.exports = function amdUnpack (source, opts) {
         body: factory.body.body
       })
 
-    if (!hasExports) {
+    // Ensure the exports object is named `exports`
+    if (hasExports) {
+      var param = factory.params[deps.indexOf('exports')]
+      if (param.name !== 'exports') {
+        moduleSource = renameVariable(moduleSource, range.start, factory, param, 'exports')
+      }
+    } else {
       // This AMD module returns a value
       moduleSource = 'module.exports = (function () {\n' + moduleSource + '\n}())'
     }
@@ -136,14 +130,14 @@ function getModuleRange (body) {
   }
 }
 
-function renameVariable (source, ast, id, name) {
+function renameVariable (source, offset, ast, id, name) {
   scan.crawl(ast)
   var binding = scan.getBinding(id)
   if (binding) {
     var edit = multisplice(source)
     binding.getReferences().forEach(function (ref) {
       if (ref === binding.definition) return
-      edit.splice(ref.start, ref.end, name)
+      edit.splice(ref.start - offset, ref.end - offset, name)
     })
     return edit.toString()
   }
