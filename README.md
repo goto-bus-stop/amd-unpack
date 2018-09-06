@@ -71,3 +71,5 @@ Return an array of [module-deps][] objects from the bundle source string `source
 ## License
 
 [Apache-2.0](LICENSE.md)
+
+[module-deps]: https://github.com/browserify/module-deps
