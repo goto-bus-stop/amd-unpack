@@ -2,6 +2,8 @@ var assert = require('assert')
 var acorn = require('acorn')
 var astring = require('astring')
 var isIdentifier = require('estree-is-identifier')
+var scan = require('scope-analyzer')
+var multisplice = require('multisplice')
 
 module.exports = function amdUnpack (source, opts) {
   var ast = typeof source === 'object' && typeof source.type === 'string'
@@ -62,7 +64,23 @@ module.exports = function amdUnpack (source, opts) {
     if (!name) return
     if (!factory) return
 
+    var hasExports = deps.some(function (dep) {
+      return dep === 'exports'
+    })
+
+    // Ensure the exports object is named `exports`
+    var moduleRangeDelta = 0
+    if (hasExports) {
+      var param = factory.params[deps.indexOf('exports')]
+      if (param.name !== 'exports') {
+        var before = source.length
+        source = renameVariable(source, factory, param, 'exports')
+        moduleRangeDelta = source.length - before
+      }
+    }
+
     var range = getModuleRange(factory.body)
+    range.end += moduleRangeDelta
     var moduleSource = source
       ? source.slice(range.start, range.end)
       : astring.generate({
@@ -70,18 +88,22 @@ module.exports = function amdUnpack (source, opts) {
         body: factory.body.body
       })
 
-    // TODO use multisplice to replace the return statements
-    moduleSource = 'module.exports = (function () {\n' + moduleSource + '\n}())'
+    if (!hasExports) {
+      // This AMD module returns a value
+      moduleSource = 'module.exports = (function () {\n' + moduleSource + '\n}())'
+    }
 
     factory.params.forEach(function (param, i) {
       var dep = deps[i]
-      moduleSource = 'var ' + astring.generate(param) + ' = require(' + JSON.stringify(dep) + ')\n' + moduleSource
+      if (dep !== 'exports') {
+        moduleSource = 'var ' + astring.generate(param) + ' = require(' + JSON.stringify(dep) + ')\n' + moduleSource
+      }
     })
 
     modules.push({
       id: name,
       deps: deps.reduce(function (acc, dep) {
-        acc[dep] = dep
+        if (!hasExports || dep !== 'exports') acc[dep] = dep
         return acc
       }, {}),
       source: moduleSource
@@ -112,4 +134,18 @@ function getModuleRange (body) {
     start: body.body[0].start,
     end: body.body[body.body.length - 1].end
   }
+}
+
+function renameVariable (source, ast, id, name) {
+  scan.crawl(ast)
+  var binding = scan.getBinding(id)
+  if (binding) {
+    var edit = multisplice(source)
+    binding.getReferences().forEach(function (ref) {
+      if (ref === binding.definition) return
+      edit.splice(ref.start, ref.end, name)
+    })
+    return edit.toString()
+  }
+  return source
 }

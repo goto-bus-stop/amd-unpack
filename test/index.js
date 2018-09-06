@@ -58,3 +58,13 @@ test('sequence', function (t) {
   t.equal(modules[0].id, 'a')
   t.equal(modules[1].id, 'b')
 })
+
+test('exports', function (t) {
+  t.plan(5)
+  var modules = amdUnpack('define("c",["a","exports"],function(a,b){b.x=a})')
+  t.equal(modules.length, 1)
+  t.equal(modules[0].id, 'c')
+  t.equal(modules[0].deps.a, 'a')
+  t.equal(Object.keys(modules[0].deps).length, 1) // should not have `exports`
+  t.equal(modules[0].source, 'var a = require("a")\nexports.x=a')
+})
