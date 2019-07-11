@@ -1,7 +1,7 @@
 {
   "name": "amd-unpack",
   "description": "extract modules from a bundled AMD project using define/require functions",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Renée Kooi <renee@kooi.me>",
   "bugs": {
     "url": "https://github.com/goto-bus-stop/amd-unpack/issues"
