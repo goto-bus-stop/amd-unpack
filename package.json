@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "browser-pack": "^6.1.0",
-    "standard": "^13.0.0",
+    "standard": "^14.3.3",
     "tap-spec": "^5.0.0",
     "tape": "^5.0.0"
   },
