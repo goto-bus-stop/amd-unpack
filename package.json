@@ -7,7 +7,7 @@
     "url": "https://github.com/goto-bus-stop/amd-unpack/issues"
   },
   "dependencies": {
-    "acorn": "^6.2.0",
+    "acorn": "^7.3.1",
     "astring": "^1.4.0",
     "estree-is-identifier": "^1.0.0",
     "minimist": "^1.2.0",
